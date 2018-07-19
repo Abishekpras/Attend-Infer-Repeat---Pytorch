@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
+import AIR
 
 
 def train(epoch, model, train_loader, batch_size, optimizer):
