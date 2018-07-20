@@ -4,16 +4,19 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
-import AIR
+#import AIR
 
+use_cuda = False
+device = torch.device("cuda" if use_cuda else "cpu") 
 
 def train(epoch, model, train_loader, batch_size, optimizer):
     train_loss = 0
     num_samples = 60000
     for batch_idx, (data, _) in enumerate(train_loader):
 
-        data = Variable(data)
-
+        data = data.view(batch_size, 50, 50)
+        data = Variable(data).to(device)
+        
         #forward + backward + optimize
         optimizer.zero_grad()
         kld_loss, nll_loss = model(data)
@@ -21,7 +24,7 @@ def train(epoch, model, train_loader, batch_size, optimizer):
         loss.backward()
         optimizer.step()
 
-        nn.utils.clip_grad_norm(model.parameters(), clip)
+        nn.utils.clip_grad_norm_(model.parameters(), clip)
 
         #printing
         epoch_iters = num_samples // batch_size
@@ -46,7 +49,7 @@ def test(epoch, model, test_loader, batch_size):
     num_samples = 10000
     for i, (data, _) in enumerate(test_loader):      
         
-        data = Variable(data)
+        data = Variable(data).to(device)
 
         kld_loss, nll_loss = model(data)
         mean_kld_loss += kld_loss.data[0]
