@@ -19,7 +19,7 @@ class ObjectEncoder(nn.Module):
     def forward(self, data):
         z_what_param = self.enc(data)
         z_what_mu = z_what_param[:, 0:50]
-        z_what_sd = nn.Softplus(z_what_param[:, 50:])
+        z_what_sd = nn.Softplus(z_what_param[:, 50:]).beta
         return z_what_mu, z_what_sd
 
 
@@ -43,15 +43,18 @@ class ObjectDecoder(nn.Module):
 ## h -> z_pres, z_where
 '''
 class Latent_Predictor(nn.Module):
-    def __init__(self, ):
+    def __init__(self):
         super(Latent_Predictor, self).__init__()
-        self.pred = nn.Linear(256, 1+3+3)
+        self.pred = nn.Linear(256, (1+3+3))
+        self._pres = nn.Sigmoid()
+        self._where_mu = lambda x: x
+        self._where_sd = nn.Softplus()
 
     def forward(self, h):
         z_param = self.pred(h)
-        z_pres_proba = nn.Sigmoid(z_param[:, 0:1])
-        z_where_mu = z_param[:, 1:4]
-        z_where_sd = nn.Softplus(z_param[:, 4:])
+        z_pres_proba = self._pres(z_param[:, 0:1])
+        z_where_mu = self._where_mu(z_param[:, 1:4])
+        z_where_sd = self._where_sd(z_param[:, 4:])
         return z_pres_proba, z_where_mu, z_where_sd
 
 '''
@@ -101,14 +104,17 @@ def attentive_stn_encode(z_where, image):
 ## Sum(Y_i) = Y
 '''
 def lay_obj_in_image(x_prev, y, z_pres):
-    return x_prev + y * z_pres.view(-1, 1, 1)
-
+    x = x_prev + (y * z_pres.unsqueeze(2))
+    x[x>1] = 1.
+    return x
+    
 '''
 ## RNN hidden state from image
 ## X -> h_i
 '''
-rnn = nn.LSTMCell(2554, 256)
-def compute_hidden_state(data, z_where_prev, z_what_prev, z_pres_prev, h_prev, c_prev):
+def compute_hidden_state(rnn, data, z_where_prev, z_what_prev, z_pres_prev, h_prev, c_prev):
+    n = data.size(0)
+    data = data.view(n, -1, 1).squeeze(2)
     rnn_input = torch.cat((data, z_where_prev, z_what_prev, z_pres_prev), 1)
     h, c = rnn(rnn_input, (h_prev, c_prev))
     return h,c
