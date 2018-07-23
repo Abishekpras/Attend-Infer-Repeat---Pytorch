@@ -4,7 +4,8 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
-#import AIR
+import AIR
+import dataset
 
 use_cuda = False
 device = torch.device("cuda" if use_cuda else "cpu") 
@@ -32,10 +33,10 @@ def train(epoch, model, train_loader, batch_size, optimizer):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\t KLD Loss: {:.6f} \t NLL Loss: {:.6f}'.format(
                 epoch, batch_idx * len(data), num_samples,
                 100. * batch_idx / epoch_iters,
-                kld_loss.data[0] / batch_size,
-                nll_loss.data[0] / batch_size))
+                kld_loss.item() / batch_size,
+                nll_loss.item() / batch_size))
 
-        train_loss += loss.data[0]
+        train_loss += loss.item()
 
 
     print('====> Epoch: {} Average loss: {:.4f}'.format(epoch, train_loss / num_samples))
@@ -52,23 +53,13 @@ def test(epoch, model, test_loader, batch_size):
         data = Variable(data).to(device)
 
         kld_loss, nll_loss = model(data)
-        mean_kld_loss += kld_loss.data[0]
-        mean_nll_loss += nll_loss.data[0]
+        mean_kld_loss += kld_loss.item()
+        mean_nll_loss += nll_loss.item()
 
     mean_kld_loss /= num_samples
     mean_nll_loss /= num_samples
 
     print('====> Test set loss: KLD Loss = {:.4f}, NLL Loss = {:.4f} '.format(mean_kld_loss, mean_nll_loss))
-
-## TODO : Replace with a better generator : Incorporate Shuffling
-
-def train_gen(mnist_train, y_train, batch_size):
-    for i in range(mnist_train.shape[0]//batch_size):
-        yield mnist_train[i*batch_size:(i+1)*batch_size], y_train[i*batch_size:(i+1)*batch_size]
-        
-def test_gen(mnist_test, y_test, batch_size):
-    for i in range(mnist_test.shape[0]//batch_size):
-        yield mnist_test[i*batch_size:(i+1)*batch_size], y_test[i*batch_size:(i+1)*batch_size]
 
 def fetch_data():
     inpath = 'E:/Docs/Workspace/MS_Thesis_Research/code/data/multi_mnist/'
@@ -97,9 +88,13 @@ if __name__== "__main__":
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     mnist_train, y_train, mnist_test, y_test = fetch_data()
-    train_loader = iter(train_gen(mnist_train, y_train, batch_size))
-    test_loader = iter(test_gen(mnist_test, y_test, batch_size))
-
+    
+    train_dset = MultiMNIST_Dataset(mnist_train, y_train)
+    test_dset = MultiMNIST_Dataset(mnist_test, y_test)
+    
+    train_loader = DataLoader(train_dset, batch_size=batch_size, shuffle=True, num_workers=1)
+    test_loader = DataLoader(test_dset, batch_size=batch_size, shuffle=True, num_workers=1)
+    
     for epoch in range(1, n_epochs + 1):
 
         #training + testing
