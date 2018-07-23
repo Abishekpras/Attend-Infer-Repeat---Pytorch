@@ -17,7 +17,7 @@ def train(epoch, model, train_loader, batch_size, optimizer):
     num_samples = 60000
     for batch_idx, (data, _) in enumerate(train_loader):
 
-        data = data.view(batch_size, 50, 50)
+        data = data.view(-1, 50, 50)
         data = Variable(data).to(device)
         
         #forward + backward + optimize
