@@ -8,8 +8,9 @@ from torch.distributions.bernoulli import Bernoulli
 from torch.distributions.independent import Independent
 from torch.distributions.normal import Normal
 
-import modules
-import main
+from modules import ObjectEncoder, ObjectDecoder, Latent_Predictor,\
+                    attentive_stn_encode, attentive_stn_decode, \
+                    lay_obj_in_image, compute_hidden_state
 
 seed = 1
 log_interval = 10
