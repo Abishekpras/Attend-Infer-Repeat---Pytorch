@@ -3,6 +3,7 @@ from observations import multi_mnist
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import AIR
 import dataset
