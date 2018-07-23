@@ -64,7 +64,7 @@ def test(epoch, model, test_loader, batch_size):
     print('====> Test set loss: KLD Loss = {:.4f}, NLL Loss = {:.4f} '.format(mean_kld_loss, mean_nll_loss))
 
 def fetch_data():
-    inpath = 'E:/Docs/Workspace/MS_Thesis_Research/code/data/multi_mnist/'
+    inpath = 'data/multi_mnist/'
     (X_train, y_train), (X_test, y_test) = multi_mnist(inpath, max_digits=2, canvas_size=50, seed=42)
     X_train, X_test = X_train.astype(np.float32), X_test.astype(np.float32)
     X_train /= 255.0
