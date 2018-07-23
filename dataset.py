@@ -1,5 +1,5 @@
 from sklearn.preprocessing import MultiLabelBinarizer
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 class MultiMNIST_Dataset(Dataset):
 
