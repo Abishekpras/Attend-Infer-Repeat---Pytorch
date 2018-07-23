@@ -5,8 +5,9 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
-import AIR
-import dataset
+import numpy as np
+from  AIR_Model import AIR
+from dataset import MultiMNIST_Dataset
 
 use_cuda = False
 device = torch.device("cuda" if use_cuda else "cpu") 
